@@ -1,14 +1,29 @@
-
 openapi: 3.0.0
 info:
   title: Demo Image Processing API
   version: 0.0.1
 servers:
-  - url: <http://localhost>:${PORT:8080}/api/v1
+  - url: http://localhost:8080/api/v1
 tags:
   - name: Image Controller
     description: Базовый CRUD API для работы с картинками
 paths:
+  /login:
+    post:
+      description: New endpoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        200:
+          description: Успешная авторизация
+        404:
+          description: Неверный логин
+        401:
+          description: Неверный пароль
   /image:
     post:
       tags:
@@ -67,7 +82,7 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
+            format: id
       responses:
         '200':
           description: Успех выполнения операции
@@ -104,7 +119,7 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
+            format: id
       responses:
         '200':
           description: Успех выполнения операции
@@ -148,6 +163,18 @@ paths:
                 $ref: '#/components/schemas/UiSuccessContainer'
 components:
   schemas:
+    LoginRequest:
+      required:
+        - username
+        - password
+      type: object
+      properties:
+        username:
+          type: string
+          description: Имя пользователя
+        password:
+          type: string
+          description: Пароль
     UiSuccessContainer:
       required:
         - success
@@ -166,7 +193,7 @@ components:
       properties:
         imageId:
           type: string
-          format: uuid
+          format: id
           description: ИД файла
     GetImagesResponse:
       required:
@@ -186,7 +213,7 @@ components:
       properties:
         imageId:
           type: string
-          format: uuid
+          format: id
           description: ИД файла
         filename:
           type: string
