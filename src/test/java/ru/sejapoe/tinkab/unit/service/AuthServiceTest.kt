@@ -5,15 +5,16 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
-import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.NoOpPasswordEncoder
+import ru.sejapoe.tinkab.domain.UserEntity
 import ru.sejapoe.tinkab.exception.ConflictException
 import ru.sejapoe.tinkab.exception.UnauthorizedException
 import ru.sejapoe.tinkab.repo.user.UserRepository
 import ru.sejapoe.tinkab.security.JwtService
 import ru.sejapoe.tinkab.service.AuthService
+import java.util.*
 
 internal class AuthServiceTest {
     @Test
@@ -64,7 +65,7 @@ internal class AuthServiceTest {
         val passwordEncoder = NoOpPasswordEncoder.getInstance()
 
         val userRepository = mock<UserRepository> {
-            on { findByUsername(any()) } doThrow EmptyResultDataAccessException::class
+            on { findByUsername(any()) } doReturn Optional.empty()
             on { add(any(), any()) } doReturn null
         }
 
@@ -87,7 +88,7 @@ internal class AuthServiceTest {
         val passwordEncoder = NoOpPasswordEncoder.getInstance()
 
         val userRepository = mock<UserRepository> {
-            on { findByUsername(any()) } doReturn null
+            on { findByUsername(any()) } doReturn Optional.of(UserEntity(1L, "username", "password"))
             on { add(any(), any()) } doReturn null
         }
 

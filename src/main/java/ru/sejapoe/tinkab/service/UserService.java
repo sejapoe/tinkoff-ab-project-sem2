@@ -8,8 +8,6 @@ import org.springframework.stereotype.Service;
 import ru.sejapoe.tinkab.domain.UserEntity;
 import ru.sejapoe.tinkab.repo.user.UserRepository;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
@@ -17,7 +15,7 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserEntity loadUserByUsername(String username) throws UsernameNotFoundException {
-        return Optional.ofNullable(userRepository.findByUsername(username))
+        return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Username is not found"));
     }
 

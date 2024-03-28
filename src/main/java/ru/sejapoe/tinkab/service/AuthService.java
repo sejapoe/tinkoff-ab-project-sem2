@@ -1,7 +1,6 @@
 package ru.sejapoe.tinkab.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -35,12 +34,10 @@ public class AuthService {
     }
 
     public String register(String username, String password) {
-        try {
-            userRepository.findByUsername(username);
+        if (userRepository.findByUsername(username).isPresent()) {
             throw new ConflictException("User with that name already exists");
-        } catch (EmptyResultDataAccessException e) {
-            userRepository.add(username, passwordEncoder.encode(password));
-            return jwtService.generateToken(Map.of(), username, Duration.ofDays(10));
         }
+        userRepository.add(username, passwordEncoder.encode(password));
+        return jwtService.generateToken(Map.of(), username, Duration.ofDays(10));
     }
 }

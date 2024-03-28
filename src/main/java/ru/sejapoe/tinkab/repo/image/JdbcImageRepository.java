@@ -2,9 +2,7 @@ package ru.sejapoe.tinkab.repo.image;
 
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.DataClassRowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.sejapoe.tinkab.domain.ImageEntity;
 
@@ -15,44 +13,38 @@ import java.util.UUID;
 @Repository
 @RequiredArgsConstructor
 public class JdbcImageRepository implements ImageRepository {
-    private final JdbcTemplate jdbcTemplate;
+    private final JdbcClient jdbcClient;
 
     @Override
     public void save(@NotNull ImageEntity imageEntity) {
-        jdbcTemplate.update(
-                "INSERT INTO images VALUES (?, ?, ?, ?)",
-                imageEntity.id(),
-                imageEntity.filename(),
-                imageEntity.size(),
-                imageEntity.userId()
-        );
+        jdbcClient.sql("INSERT INTO images VALUES (?, ?, ?, ?)")
+                .params(imageEntity.id())
+                .param(imageEntity.filename())
+                .param(imageEntity.size())
+                .param(imageEntity.userId())
+                .update();
     }
 
     @Override
     public void remove(UUID uuid) {
-        jdbcTemplate.update("DELETE FROM images WHERE id = ?", uuid);
+        jdbcClient.sql("DELETE FROM images WHERE id = ?")
+                .param(uuid)
+                .update();
     }
 
     @Override
     public Optional<ImageEntity> get(UUID uuid) {
-        try {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(
-                    "SELECT * FROM images WHERE id = ?",
-                    new DataClassRowMapper<>(ImageEntity.class),
-                    uuid
-            ));
-        } catch (EmptyResultDataAccessException e) {
-            return Optional.empty();
-        }
-
+        return jdbcClient.sql("SELECT * FROM images WHERE id = ?")
+                .param(uuid)
+                .query(ImageEntity.class)
+                .optional();
     }
 
     @Override
     public List<ImageEntity> getByUserId(Long userId) {
-        return jdbcTemplate.query(
-                "SELECT * FROM images WHERE user_id = ?",
-                new DataClassRowMapper<>(ImageEntity.class),
-                userId
-        );
+        return jdbcClient.sql("SELECT * FROM images WHERE user_id = ?")
+                .param(userId)
+                .query(ImageEntity.class)
+                .list();
     }
 }
