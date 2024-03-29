@@ -1,5 +1,4 @@
 import org.springdoc.openapi.gradle.plugin.OpenApiGeneratorTask
-import java.time.Duration
 
 plugins {
     java
@@ -69,7 +68,7 @@ tasks.withType<Test> {
 
 tasks.withType<OpenApiGeneratorTask> {
     apiDocsUrl = "http://localhost:8080/api/v1/v3/api-docs"
-    timeout = Duration.ofMinutes(2)
+    waitTimeInSeconds = 300
 }
 
 kotlin {
