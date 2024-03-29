@@ -9,7 +9,7 @@ import java.lang.annotation.*;
 /**
  * Annotation to specify acceptable media types of file
  */
-@Target({ElementType.FIELD})
+@Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = MediaTypeValidator.class)
 @Documented

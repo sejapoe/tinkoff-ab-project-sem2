@@ -31,7 +31,14 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers(HttpMethod.OPTIONS).permitAll()
-                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers(
+                                "/auth/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs",
+                                "/v3/api-docs.yaml",
+                                "/api-docs.yaml"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionConfigurer -> sessionConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

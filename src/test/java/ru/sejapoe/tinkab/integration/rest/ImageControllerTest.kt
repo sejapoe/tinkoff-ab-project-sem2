@@ -161,7 +161,7 @@ class ImageControllerTest : AbstractRestTest() {
         val expected = """
             {
                 "success": false,
-                "message": "Bad Request: file - Not acceptable file's content type"
+                "message": "400 BAD_REQUEST: Not acceptable files content type"
             }
         """.trimIndent()
 

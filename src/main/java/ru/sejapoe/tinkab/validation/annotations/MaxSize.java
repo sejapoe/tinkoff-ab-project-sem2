@@ -9,7 +9,7 @@ import java.lang.annotation.*;
 /**
  * Annotation to specify the maximum size constraint for a field.
  */
-@Target({ElementType.FIELD})
+@Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = MaxSizeValidator.class)
 @Documented

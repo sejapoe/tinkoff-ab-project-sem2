@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import ru.sejapoe.tinkab.dto.SuccessResponse;
 import ru.sejapoe.tinkab.exception.BaseException;
 
@@ -29,6 +30,23 @@ public class RestExceptionHandler {
         return new SuccessResponse(
                 false,
                 ex.getBody().getTitle() + ": " + fieldError.getField() + " - " + fieldError.getDefaultMessage()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public SuccessResponse handlerMethodValidationException(HandlerMethodValidationException ex) {
+        Object[] detailMessageArguments = ex.getDetailMessageArguments();
+        if (detailMessageArguments == null || detailMessageArguments.length == 0) {
+            return new SuccessResponse(
+                    false,
+                    ex.getMessage()
+            );
+        }
+
+        return new SuccessResponse(
+                false,
+                ex.getStatusCode() + ": " + detailMessageArguments[0]
         );
     }
 

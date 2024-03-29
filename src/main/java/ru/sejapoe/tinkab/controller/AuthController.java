@@ -3,6 +3,7 @@ package ru.sejapoe.tinkab.controller;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,7 +15,7 @@ import ru.sejapoe.tinkab.service.AuthService;
 import java.time.Duration;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/auth")
 public class AuthController {
     public static final String AUTH_COOKIE_NAME = "token";
     private final AuthService authService;
@@ -23,14 +24,14 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @PostMapping("/login")
+    @PostMapping(value = "/login", produces = {MediaType.APPLICATION_JSON_VALUE})
     public SuccessResponse login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         var token = authService.login(loginRequest.username(), loginRequest.password());
         addCookie(token, response);
         return new SuccessResponse(true, "Authorized");
     }
 
-    @PostMapping("/register")
+    @PostMapping(value = "/register", produces = {MediaType.APPLICATION_JSON_VALUE})
     public SuccessResponse register(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         var token = authService.register(loginRequest.username(), loginRequest.password());
         addCookie(token, response);

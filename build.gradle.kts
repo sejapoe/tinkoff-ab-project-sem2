@@ -1,8 +1,12 @@
+import org.springdoc.openapi.gradle.plugin.OpenApiGeneratorTask
+import java.time.Duration
+
 plugins {
     java
     id("org.springframework.boot") version "3.2.4"
     id("io.spring.dependency-management") version "1.1.4"
     kotlin("jvm")
+    id("org.springdoc.openapi-gradle-plugin") version "1.8.0"
 }
 
 group = "ru.sejapoe"
@@ -61,6 +65,11 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.withType<OpenApiGeneratorTask> {
+    apiDocsUrl = "http://localhost:8080/api/v1/v3/api-docs"
+    timeout = Duration.ofMinutes(2)
 }
 
 kotlin {
