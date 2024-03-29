@@ -52,7 +52,7 @@ class ImageControllerTest : AbstractRestTest() {
             val generateHeader = cookieProcessor.generateHeader(cookie, null)
             add(HttpHeaders.COOKIE, generateHeader)
         }
-    };
+    }
 
     private val getAuthorizedHttpHeaders: HttpHeaders by lazy {
         HttpHeaders().apply {
@@ -74,7 +74,7 @@ class ImageControllerTest : AbstractRestTest() {
             val generateHeader = cookieProcessor.generateHeader(cookie, null)
             add(HttpHeaders.COOKIE, generateHeader)
         }
-    };
+    }
 
     private val getAnotherAuthorizedHttpHeaders: HttpHeaders by lazy {
         HttpHeaders().apply {
@@ -83,11 +83,12 @@ class ImageControllerTest : AbstractRestTest() {
         }
     }
 
-    private lateinit var storedUUID: UUID;
+    private lateinit var storedUUID: UUID
 
+    @Suppress("SqlWithoutWhere")
     @BeforeAll
     fun setUp() {
-        jdbcTemplate.update("DELETE FROM users")
+        jdbcTemplate.update(" DELETE FROM users")
         jdbcTemplate.update("DELETE FROM images")
 
         jdbcTemplate.update(
