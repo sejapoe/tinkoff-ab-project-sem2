@@ -15,11 +15,13 @@ jobs:
           java-version: 17
       - name: Setup gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.6
       - name: Execute Gradle Build
         run: ./gradlew build
       - name: Generate OpenAPI specs
         run: ./gradlew generateOpenApiDocs
-      - name: Run OpenAPI Diff (from HEAD rev)
+      - name: Run OpenAPI Diff
         uses: docker://openapitools/openapi-diff:latest
         with:
           args: --fail-on-incompatible openapi.yaml build/openapi.json
