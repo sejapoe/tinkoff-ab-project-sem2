@@ -32,11 +32,10 @@ jobs:
           script: |
             const fs = require('fs');
             
-            const prefix = "## OpenAPI difference report\n";
+            const prefix = "## OpenAPI difference report";
             
             let content = fs.readFileSync('openapi-diff-report.md', 'utf8');
-            content = prefix + content;
-            core.summary.addRaw(content, true);
+            content = prefix + "\n" + content;
             
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -53,7 +52,7 @@ jobs:
             
             const existingComment = comments.data.find(comment => comment.body.startsWith(prefix));
             
-            core.info(existingComment)
+            core.info(existingComment.id)
             
             if (existingComment) {
               await github.rest.issues.updateComment({
