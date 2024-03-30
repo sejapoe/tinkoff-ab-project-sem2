@@ -34,7 +34,7 @@ jobs:
             
             const prefix = "## OpenAPI difference report\n";
             
-            const content = fs.readFileSync('openapi-diff-report.md', 'utf8');
+            let content = fs.readFileSync('openapi-diff-report.md', 'utf8');
             content = prefix + content;
             core.summary.addRaw(content, true);
             
