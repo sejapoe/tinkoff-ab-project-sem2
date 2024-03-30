@@ -26,7 +26,7 @@ jobs:
         id: read-file
         run: |
           echo "::set-output name=content::$(cat openapi-diff-report.md)"
-      - name: Create Comment
+      - name: Create OpenAPI DIff Comment
         uses: actions/github-script@v7
         with:
           script: |
@@ -69,4 +69,12 @@ jobs:
                 body: content
               });
             }
-            
+      - name: Add coverage to PR
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.6.1
+        if: ( github.event_name != 'workflow_dispatch' )
+        with:
+          paths: ${{ github.workspace }}/build/jacoco/jacoco.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 75
+          min-coverage-changed-files: 75
