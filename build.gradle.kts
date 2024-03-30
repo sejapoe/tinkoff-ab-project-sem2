@@ -85,3 +85,10 @@ tasks.withType<OpenApiGeneratorTask> {
 kotlin {
     jvmToolchain(17)
 }
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required = true
+        csv.required = false
+    }
+}
