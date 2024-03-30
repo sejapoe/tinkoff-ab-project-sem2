@@ -36,5 +36,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: steps.set_var.outputs.openapiDiffReport
+              body: github.steps.set_var.outputs.openapiDiffReport
             })
