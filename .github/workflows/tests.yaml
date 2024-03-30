@@ -31,10 +31,11 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            // Read content from file
-            const content = fs.readFileSync('openapi-diff-report.md', 'utf8');
-            core.info(content); // Output content to logs
             
+            const prefix = "## OpenAPI difference report\n";
+            
+            const content = fs.readFileSync('openapi-diff-report.md', 'utf8');
+            const content = prefix + content;
             core.summary.addRaw(content, true);
             
             await github.rest.issues.createComment({
@@ -43,4 +44,29 @@ jobs:
               repo: context.repo.repo,
               body: content
             });
+            
+            const comments = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            
+            const existingComment = comments.data.find(comment => comment.body.startsWith(prefix));
+            
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                comment_id: existingComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: content
+              });
+            } else {
+              console.log('No existing comment found. Creating a new one.');
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: content
+              });
+            }
             
