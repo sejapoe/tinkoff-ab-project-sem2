@@ -54,7 +54,8 @@ jobs:
             
             core.info(existingComment.id)
             
-            if (existingComment) {
+            if (!!existingComment) {
+              core.info('Editing existing comment');
               await github.rest.issues.updateComment({
                 comment_id: existingComment.id,
                 owner: context.repo.owner,
