@@ -31,6 +31,7 @@ jobs:
         with:
           script: |
             const content = process.env.content;
+            core.info(content); // Output content to logs
             
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -39,4 +40,3 @@ jobs:
               body: content
             });
             
-            // core.info(content); // Output content to logs
