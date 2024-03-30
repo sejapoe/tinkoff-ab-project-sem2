@@ -53,6 +53,8 @@ jobs:
             
             const existingComment = comments.data.find(comment => comment.body.startsWith(prefix));
             
+            core.info(existingComment)
+            
             if (existingComment) {
               await github.rest.issues.updateComment({
                 comment_id: existingComment.id,
@@ -61,7 +63,7 @@ jobs:
                 body: content
               });
             } else {
-              console.log('No existing comment found. Creating a new one.');
+              core.info('No existing comment found. Creating a new one.');
               await github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
