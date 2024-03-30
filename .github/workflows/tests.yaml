@@ -35,7 +35,7 @@ jobs:
             const prefix = "## OpenAPI difference report\n";
             
             const content = fs.readFileSync('openapi-diff-report.md', 'utf8');
-            const content = prefix + content;
+            content = prefix + content;
             core.summary.addRaw(content, true);
             
             await github.rest.issues.createComment({
