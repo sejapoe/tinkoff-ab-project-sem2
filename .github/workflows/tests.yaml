@@ -30,7 +30,6 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const core = require('@actions/core');
             const content = process.env.content;
             
             await github.rest.issues.createComment({
@@ -40,4 +39,4 @@ jobs:
               body: content
             });
             
-            core.info(content); // Output content to logs
+            // core.info(content); // Output content to logs
