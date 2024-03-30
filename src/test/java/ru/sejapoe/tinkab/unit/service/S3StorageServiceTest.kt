@@ -23,9 +23,7 @@ class S3StorageServiceTest {
     @Test
     @DisplayName("Test init minio, create bucket")
     fun init() {
-        val storageProperties = mock<StorageProperties> {
-            on { bucketName } doReturn "test-bucket"
-        }
+        val storageProperties = StorageProperties("", "", "test-bucket", "", "")
 
         val minioClient = mock<MinioClient> {
             on { bucketExists(any()) } doReturn false
@@ -42,9 +40,7 @@ class S3StorageServiceTest {
     @Test
     @DisplayName("Test init minio, bucket exists")
     fun initBucketExists() {
-        val storageProperties = mock<StorageProperties> {
-            on { bucketName } doReturn "test-bucket"
-        }
+        val storageProperties = StorageProperties("", "", "test-bucket", "", "")
 
         val minioClient = mock<MinioClient> {
             on { bucketExists(any()) } doReturn true
@@ -61,9 +57,7 @@ class S3StorageServiceTest {
     @Test
     @DisplayName("Test init minio, bad bucket name")
     fun initBadBucketName() {
-        val storageProperties = mock<StorageProperties> {
-            on { bucketName } doReturn ""
-        }
+        val storageProperties = StorageProperties("", "", "", "", "")
 
         val minioClient = mock<MinioClient>()
 
@@ -79,11 +73,13 @@ class S3StorageServiceTest {
     @Test
     @DisplayName("Test store file")
     fun store() {
+        val storageProperties = StorageProperties("", "", "test-bucket", "", "")
+
         val minioClient = mock<MinioClient> {
             on { putObject(any()) } doReturn null
         }
 
-        val s3StorageService = S3StorageService(mock(), minioClient).apply {
+        val s3StorageService = S3StorageService(storageProperties, minioClient).apply {
             val bucketNameField = S3StorageService::class.java.getDeclaredField("bucketName")
             bucketNameField.isAccessible = true
             bucketNameField.set(this, "test-bucket")
@@ -98,9 +94,11 @@ class S3StorageServiceTest {
     @Test
     @DisplayName("Test store empty file")
     fun storeEmptyFile() {
+        val storageProperties = StorageProperties("", "", "test-bucket", "", "")
+
         val minioClient = mock<MinioClient>()
 
-        val s3StorageService = S3StorageService(mock(), minioClient).apply {
+        val s3StorageService = S3StorageService(storageProperties, minioClient).apply {
             val bucketNameField = S3StorageService::class.java.getDeclaredField("bucketName")
             bucketNameField.isAccessible = true
             bucketNameField.set(this, "test-bucket")
@@ -117,11 +115,13 @@ class S3StorageServiceTest {
     @Test
     @DisplayName("Test store file failed")
     fun storeFileFailed() {
+        val storageProperties = StorageProperties("", "", "test-bucket", "", "")
+
         val minioClient = mock<MinioClient> {
             on { putObject(any()) } doThrow IOException()
         }
 
-        val s3StorageService = S3StorageService(mock(), minioClient).apply {
+        val s3StorageService = S3StorageService(storageProperties, minioClient).apply {
             val bucketNameField = S3StorageService::class.java.getDeclaredField("bucketName")
             bucketNameField.isAccessible = true
             bucketNameField.set(this, "test-bucket")
@@ -138,11 +138,13 @@ class S3StorageServiceTest {
     @Test
     @DisplayName("Test remove file")
     fun remove() {
+        val storageProperties = StorageProperties("", "", "test-bucket", "", "")
+
         val minioClient = mock<MinioClient> {
             on { removeObject(any()) } doAnswer {}
         }
 
-        val s3StorageService = S3StorageService(mock(), minioClient).apply {
+        val s3StorageService = S3StorageService(storageProperties, minioClient).apply {
             val bucketNameField = S3StorageService::class.java.getDeclaredField("bucketName")
             bucketNameField.isAccessible = true
             bucketNameField.set(this, "test-bucket")
@@ -156,11 +158,13 @@ class S3StorageServiceTest {
     @Test
     @DisplayName("Test remove file failed")
     fun removeFailed() {
+        val storageProperties = StorageProperties("", "", "test-bucket", "", "")
+
         val minioClient = mock<MinioClient> {
             on { removeObject(any()) } doThrow IOException()
         }
 
-        val s3StorageService = S3StorageService(mock(), minioClient).apply {
+        val s3StorageService = S3StorageService(storageProperties, minioClient).apply {
             val bucketNameField = S3StorageService::class.java.getDeclaredField("bucketName")
             bucketNameField.isAccessible = true
             bucketNameField.set(this, "test-bucket")
@@ -175,6 +179,8 @@ class S3StorageServiceTest {
 
     @Test
     fun loadAsResource() {
+        val storageProperties = StorageProperties("", "", "test-bucket", "", "")
+
         val getObjectResponse = mock<GetObjectResponse> {
             on { readAllBytes() } doReturn "abracadabra".toByteArray()
         }
@@ -183,7 +189,7 @@ class S3StorageServiceTest {
             on { getObject(any()) } doReturn getObjectResponse
         }
 
-        val s3StorageService = S3StorageService(mock(), minioClient).apply {
+        val s3StorageService = S3StorageService(storageProperties, minioClient).apply {
             val bucketNameField = S3StorageService::class.java.getDeclaredField("bucketName")
             bucketNameField.isAccessible = true
             bucketNameField.set(this, "test-bucket")
@@ -196,6 +202,8 @@ class S3StorageServiceTest {
 
     @Test
     fun loadAsResourceNoSuchKey() {
+        val storageProperties = StorageProperties("", "", "test-bucket", "", "")
+
         val errorResponse = mock<ErrorResponse> {
             on { code() } doReturn "NoSuchKey"
         }
@@ -208,7 +216,7 @@ class S3StorageServiceTest {
             on { getObject(any()) } doThrow errorResponseException
         }
 
-        val s3StorageService = S3StorageService(mock(), minioClient).apply {
+        val s3StorageService = S3StorageService(storageProperties, minioClient).apply {
             val bucketNameField = S3StorageService::class.java.getDeclaredField("bucketName")
             bucketNameField.isAccessible = true
             bucketNameField.set(this, "test-bucket")
