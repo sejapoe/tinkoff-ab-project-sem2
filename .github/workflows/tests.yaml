@@ -128,6 +128,7 @@ jobs:
           title: "Jacoco Report"
   deploy:
     runs-on: ubuntu-latest
+    needs: [ build, checkstyle, openapi-diff, unit-tests ]
     steps:
       - uses: actions/checkout@v4
       - name: Get the version
@@ -135,9 +136,9 @@ jobs:
         run: echo ::set-output name=tag::$(echo ${GITHUB_SHA:10})
       - name: Docker login
         env:
-          DOCKERHUB_USERNAME: ${{ secrets.dockerhub_username }}
-          DOCKERHUB_PASSWORD: ${{ secrets.dockerhub_password }}
-        run: docker login -u="$DOCKERHUB_USERNAME" -p="$DOCKERHUB_PASSWORD" docker.io
+          DOCKER_USERNAME: ${{ secrets.dockerhub_username }}
+          DOCKER_PASSWORD: ${{ secrets.dockerhub_password }}
+        run: docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" docker.io
       - name: Build the Docker image
         run: docker build . --file Dockerfile --tag ${{secrets.dockerhub_username}}/${{secrets.dockerhub_repo_name}}:${{steps.vars.outputs.tag}}
       - name: Publish dockerimage to docker hub
