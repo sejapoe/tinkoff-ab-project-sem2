@@ -7,6 +7,7 @@ plugins {
     kotlin("jvm")
     id("org.springdoc.openapi-gradle-plugin") version "1.8.0"
     jacoco
+    checkstyle
 }
 
 group = "ru.sejapoe"

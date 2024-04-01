@@ -1,11 +1,11 @@
 name: tests
 on: [ pull_request ]
 jobs:
-  gradle:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup gradle
+      - name: Setup java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -14,8 +14,47 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: 8.6
-      - name: Execute Gradle Build
-        run: ./gradlew build
+      - name: Execute Gradle Assemble
+        run: ./gradlew clean assemble
+      - name: Add coverage to PR
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.6.1
+        if: ( github.event_name != 'workflow_dispatch' )
+        with:
+          paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 75
+          min-coverage-changed-files: 75
+          update-comment: true
+          title: "Jacoco Report"
+  checkstyle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Setup gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.6
+      - name: Execute Gradle Checkstyle
+        run: ./gradlew checkstyleMain checkstyleTest
+  openapi-diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Setup gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.6
       - name: Generate OpenAPI specs
         run: ./gradlew generateOpenApiDocs
       - name: Run OpenAPI Diff
@@ -31,20 +70,20 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            
+
             const prefix = "## OpenAPI difference report";
-            
+
             let content = fs.readFileSync('openapi-diff-report.md', 'utf8');
             content = prefix + "\n" + content;
-            
+
             const comments = await github.rest.issues.listComments({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
-            
+
             const existingComment = comments.data.find(comment => comment.body.startsWith(prefix));
-            
+
             if (!!existingComment) {
               await github.rest.issues.updateComment({
                 comment_id: existingComment.id,
@@ -61,6 +100,21 @@ jobs:
                 body: content
               });
             }
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Setup gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.6
+      - name: Execute Gradle Test
+        run: ./gradlew clean test
       - name: Add coverage to PR
         id: jacoco
         uses: madrapps/jacoco-report@v1.6.1
@@ -72,3 +126,23 @@ jobs:
           min-coverage-changed-files: 75
           update-comment: true
           title: "Jacoco Report"
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get the version
+        id: vars
+        run: echo ::set-output name=tag::$(echo ${GITHUB_SHA:10})
+      - name: Docker login
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.dockerhub_username }}
+          DOCKERHUB_PASSWORD: ${{ secrets.dockerhub_password }}
+        run: docker login -u="$DOCKERHUB_USERNAME" -p="$DOCKERHUB_PASSWORD" docker.io
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag ${{secrets.dockerhub_username}}/${{secrets.dockerhub_repo_name}}:${{steps.vars.outputs.tag}}
+      - name: Publish dockerimage to docker hub
+        run: docker push ${{secrets.dockerhub_username}}/${{secrets.dockerhub_repo_name}}:${{steps.vars.outputs.tag}}
+      - name: Build Docker image with latest tag
+        run: docker build . --file Dockerfile --tag ${{secrets.dockerhub_username}}/${{secrets.dockerhub_repo_name}}:latest
+      - name: Publish dockerimage to docker hub
+        run: docker push ${{secrets.dockerhub_username}}/${{secrets.dockerhub_repo_name}}:latest
