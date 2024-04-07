@@ -14,6 +14,7 @@ import ru.sejapoe.tinkab.service.AuthService;
 
 import java.time.Duration;
 
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {

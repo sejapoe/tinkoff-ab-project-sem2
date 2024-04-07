@@ -42,7 +42,10 @@ public class ImageController {
     })
     @GetMapping(value = "/images", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ListImagesResponse getImages() {
-        return new ListImagesResponse(imageService.getAll().stream().map(imageMapper::toImageResponse).collect(Collectors.toList()));
+        return new ListImagesResponse(imageService.getAll()
+                .stream()
+                .map(imageMapper::toImageResponse)
+                .collect(Collectors.toList()));
     }
 
     @ApiResponses({
@@ -64,7 +67,9 @@ public class ImageController {
         ImageEntity imageEntity = imageService.getById(imageId);
         Resource file = storageService.loadAsResource(imageId.toString());
 
-        if (file == null) throw new NotFoundException("Image [%s] is not found".formatted(imageId));
+        if (file == null) {
+            throw new NotFoundException("Image [%s] is not found".formatted(imageId));
+        }
 
         String contentDispositionHeaderValue = "attachment; filename=\"%s\"".formatted(imageEntity.filename());
         return ResponseEntity.ok()
@@ -90,7 +95,6 @@ public class ImageController {
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE})
     public UploadImageResponse postImage(
-//            @Valid
             @RequestParam("file")
             @NotNull
             @MaxSize("10M")

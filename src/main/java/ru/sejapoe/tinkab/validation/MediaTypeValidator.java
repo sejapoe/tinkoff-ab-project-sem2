@@ -7,7 +7,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-public class MediaTypeValidator implements ConstraintValidator<ru.sejapoe.tinkab.validation.annotations.MediaType, MultipartFile> {
+public class MediaTypeValidator
+        implements ConstraintValidator<ru.sejapoe.tinkab.validation.annotations.MediaType, MultipartFile> {
     List<MediaType> mediaTypes;
 
     @Override

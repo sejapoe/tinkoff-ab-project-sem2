@@ -19,13 +19,15 @@ public class SizeConverter {
      * @throws IllegalArgumentException if the size string is invalid
      */
     public static long convertToBytes(String sizeString) {
-        if (sizeString == null || sizeString.isEmpty())
+        if (sizeString == null || sizeString.isEmpty()) {
             throw new IllegalArgumentException("Size string cannot be null or empty.");
+        }
 
         Pattern pattern = Pattern.compile("(\\d+)([KkMmGgTt]?)");
         Matcher matcher = pattern.matcher(sizeString);
-        if (!matcher.matches())
+        if (!matcher.matches()) {
             throw new IllegalArgumentException("Invalid size string format.");
+        }
 
         long size = Long.parseLong(matcher.group(1));
         String suffix = matcher.group(2).toUpperCase();
