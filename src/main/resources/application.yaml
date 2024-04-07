@@ -1,7 +1,22 @@
 spring:
   application:
     name: tink-ab
+  datasource:
+    url: jdbc:postgresql://localhost:15432/mydatabase
+    username: myuser
+    password: secret
+    driver-class-name: org.postgresql.Driver
+  mvc:
+    servlet:
+      path: /api/v1
 
-springdoc:
-  api-docs:
-    path: classpath:openapi.yaml
+storage:
+  access-key: test-user
+  secret-key: secret-secret
+  endpoint: http://localhost:9001
+  bucket-name: test-bucket
+  region: us-east-1
+
+jwt:
+  secret: 47397FFF432646294A404E635266556A586E3272357538782F4125442A472D4B
+  issuer: sejapoe
