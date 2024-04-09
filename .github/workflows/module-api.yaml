@@ -1,4 +1,4 @@
-name: tests
+name: module-api
 on: [ pull_request ]
 jobs:
   build:
@@ -15,13 +15,13 @@ jobs:
         with:
           gradle-version: 8.6
       - name: Execute Gradle Assemble
-        run: ./gradlew clean assemble
+        run: ./gradlew :api:clean :api:assemble
       - name: Add coverage to PR
         id: jacoco
         uses: madrapps/jacoco-report@v1.6.1
         if: ( github.event_name != 'workflow_dispatch' )
         with:
-          paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
+          paths: ${{ github.workspace }}/api/build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 75
           min-coverage-changed-files: 75
@@ -56,15 +56,11 @@ jobs:
         with:
           gradle-version: 8.6
       - name: Generate OpenAPI specs
-        run: ./gradlew generateOpenApiDocs
+        run: ./gradlew :api:generateOpenApiDocs -x :api:test
       - name: Run OpenAPI Diff
         uses: docker://openapitools/openapi-diff:latest
         with:
-          args: --fail-on-incompatible openapi.yaml build/openapi.json --markdown ./openapi-diff-report.md
-      - name: Read file content
-        id: read-file
-        run: |
-          echo "::set-output name=content::$(cat openapi-diff-report.md)"
+          args: --fail-on-incompatible api/openapi.yaml api/build/openapi.json --markdown ./api/openapi-diff-report.md
       - name: Create OpenAPI DIff Comment
         uses: actions/github-script@v7
         with:
@@ -73,7 +69,7 @@ jobs:
 
             const prefix = "## OpenAPI difference report";
 
-            let content = fs.readFileSync('openapi-diff-report.md', 'utf8');
+            let content = fs.readFileSync('api/openapi-diff-report.md', 'utf8');
             content = prefix + "\n" + content;
 
             const comments = await github.rest.issues.listComments({
@@ -114,13 +110,13 @@ jobs:
         with:
           gradle-version: 8.6
       - name: Execute Gradle Test
-        run: ./gradlew clean test
+        run: ./gradlew :api:clean :api:test
       - name: Add coverage to PR
         id: jacoco
         uses: madrapps/jacoco-report@v1.6.1
         if: ( github.event_name != 'workflow_dispatch' )
         with:
-          paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
+          paths: ${{ github.workspace }}/api/build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 75
           min-coverage-changed-files: 75
@@ -135,15 +131,20 @@ jobs:
         id: vars
         run: echo ::set-output name=tag::$(echo ${GITHUB_SHA:10})
       - name: Docker login
+        working-directory: ./api
         env:
           DOCKER_USERNAME: ${{ secrets.dockerhub_username }}
           DOCKER_PASSWORD: ${{ secrets.dockerhub_password }}
         run: docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" docker.io
       - name: Build the Docker image
+        working-directory: ./api
         run: docker build . --file Dockerfile --tag ${{secrets.dockerhub_username}}/${{secrets.dockerhub_repo_name}}:${{steps.vars.outputs.tag}}
       - name: Publish dockerimage to docker hub
+        working-directory: ./api
         run: docker push ${{secrets.dockerhub_username}}/${{secrets.dockerhub_repo_name}}:${{steps.vars.outputs.tag}}
       - name: Build Docker image with latest tag
+        working-directory: ./api
         run: docker build . --file Dockerfile --tag ${{secrets.dockerhub_username}}/${{secrets.dockerhub_repo_name}}:latest
       - name: Publish dockerimage to docker hub
+        working-directory: ./api
         run: docker push ${{secrets.dockerhub_username}}/${{secrets.dockerhub_repo_name}}:latest

@@ -4,7 +4,7 @@ plugins {
     java
     id("org.springframework.boot") version "3.2.4"
     id("io.spring.dependency-management") version "1.1.4"
-    kotlin("jvm")
+    kotlin("jvm") version "1.9.23"
     id("org.springdoc.openapi-gradle-plugin") version "1.8.0"
     jacoco
     checkstyle
@@ -12,9 +12,6 @@ plugins {
 
 group = "ru.sejapoe"
 version = "0.0.1-SNAPSHOT"
-
-java {
-}
 
 checkstyle {
     toolVersion = "10.12.7"
@@ -85,6 +82,14 @@ tasks.jacocoTestReport {
 tasks.withType<OpenApiGeneratorTask> {
     apiDocsUrl = "http://localhost:8080/api/v1/v3/api-docs"
     waitTimeInSeconds = 300
+}
+
+tasks.withType<Checkstyle>() {
+    configFile = File("$projectDir/config/checkstyle/checkstyle.xml")
+}
+
+tasks.jar {
+    archiveFileName = "app.jar"
 }
 
 kotlin {
