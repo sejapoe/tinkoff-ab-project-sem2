@@ -56,6 +56,8 @@ jobs:
         with:
           gradle-version: 8.6
       - name: Generate OpenAPI specs
+        env:
+          SPRING_DOCKER_COMPOSE_ENABLED: true
         run: ./gradlew :api:generateOpenApiDocs -x :api:test
       - name: Run OpenAPI Diff
         uses: docker://openapitools/openapi-diff:latest
