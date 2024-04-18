@@ -9,6 +9,19 @@ spring:
   mvc:
     servlet:
       path: /api/v1
+  kafka:
+    listener.ack-mode: manual
+    bootstrap-servers:
+      - localhost:9092
+      - localhost:9093
+      - localhost:9094
+    properties:
+      security.protocol: SASL_PLAINTEXT
+      sasl.mechanism: PLAIN
+      sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:admin}" password="${KAFKA_PASSWORD:admin-secret}";
+  docker:
+    compose:
+      enabled: false
 
 storage:
   access-key: test-user

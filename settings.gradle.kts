@@ -1,2 +1,2 @@
 rootProject.name = "tink-ab"
-include("api")
+include("api", "worker")
