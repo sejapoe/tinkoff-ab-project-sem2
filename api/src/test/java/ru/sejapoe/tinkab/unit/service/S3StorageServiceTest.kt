@@ -85,7 +85,7 @@ class S3StorageServiceTest {
             bucketNameField.set(this, "test-bucket")
         }
 
-        val multipartFile = MockMultipartFile("image.png", "abracadabra".toByteArray())
+        val multipartFile = MockMultipartFile("image.png", "image.png", "image.png", "abracadabra".toByteArray())
         s3StorageService.store(multipartFile)
 
         verify(minioClient, times(1)).putObject(any())
@@ -127,7 +127,7 @@ class S3StorageServiceTest {
             bucketNameField.set(this, "test-bucket")
         }
 
-        val multipartFile = MockMultipartFile("image.png", "abracadabra".toByteArray())
+        val multipartFile = MockMultipartFile("image.png", "image.png", "image.png", "abracadabra".toByteArray())
         assertThrows<StorageException> {
             s3StorageService.store(multipartFile)
         }
