@@ -9,11 +9,7 @@ import org.springframework.stereotype.Component;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.Network;
-import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.DockerImageName;
-
-import java.time.Duration;
-import java.util.stream.Stream;
 
 public class KafkaTestConfig {
     private static final KafkaContainer kafka1Container;
@@ -29,7 +25,11 @@ public class KafkaTestConfig {
         kafka1Container = initKafkaBrokerContainer(1, network);
         kafka2Container = initKafkaBrokerContainer(2, network);
         kafka3Container = initKafkaBrokerContainer(3, network);
-        Stream.of(zookeeperContainer, kafka1Container, kafka2Container, kafka3Container).parallel().forEach(Startable::start);
+
+        zookeeperContainer.start();
+        kafka1Container.start();
+        kafka2Container.start();
+        kafka3Container.start();
     }
 
     private static KafkaContainer initKafkaBrokerContainer(int brokerId, Network network) {
@@ -39,7 +39,7 @@ public class KafkaTestConfig {
                 .withEnv("KAFKA_BROKER_ID", Integer.toString(brokerId))
                 .withExternalZookeeper("zookeeper:2181")
                 .dependsOn(zookeeperContainer)
-                .withStartupTimeout(Duration.ofSeconds(60))
+                .withStartupAttempts(3)
                 .withReuse(true);
     }
 
@@ -48,7 +48,7 @@ public class KafkaTestConfig {
                 .withNetwork(network)
                 .withNetworkAliases("zookeeper")
                 .withEnv("ZOOKEEPER_CLIENT_PORT", "2181")
-                .withStartupTimeout(Duration.ofSeconds(60))
+                .withStartupAttempts(3)
                 .withReuse(true);
     }
 
