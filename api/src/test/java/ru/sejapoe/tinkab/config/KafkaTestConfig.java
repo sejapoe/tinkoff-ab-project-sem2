@@ -41,16 +41,17 @@ public class KafkaTestConfig {
 
         env.put("KAFKA_LISTENER_NAME_PLAINTEXT_SASL_ENABLED_MECHANISMS", "PLAIN");
 
-        env.put("KAFKA_LISTENER_NAME_PLAINTEXT_PLAIN_SASL_JAAS_CONFIG", "org.apache.kafka.common.security.plain.PlainLoginModule required " +
-                "username=\"admin\" " +
-                "password=\"admin-secret\" " +
-                "user_admin=\"admin-secret\" " +
-                "user_producer=\"producer-secret\" " +
-                "user_consumer=\"consumer-secret\";");
+        env.put("KAFKA_LISTENER_NAME_PLAINTEXT_PLAIN_SASL_JAAS_CONFIG",
+                "org.apache.kafka.common.security.plain.PlainLoginModule required "
+                        + "username=\"admin\" "
+                        + "password=\"admin-secret\" "
+                        + "user_admin=\"admin-secret\" "
+                        + "user_producer=\"producer-secret\" "
+                        + "user_consumer=\"consumer-secret\";");
 
-        env.put("KAFKA_SASL_JAAS_CONFIG", "org.apache.kafka.common.security.plain.PlainLoginModule required " +
-                "username=\"admin\" " +
-                "password=\"admin-secret\";");
+        env.put("KAFKA_SASL_JAAS_CONFIG", "org.apache.kafka.common.security.plain.PlainLoginModule required "
+                + "username=\"admin\" "
+                + "password=\"admin-secret\";");
 
         return new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:latest"))
                 .withNetwork(network)
@@ -77,7 +78,9 @@ public class KafkaTestConfig {
         @Override
         public void initialize(ConfigurableApplicationContext applicationContext) {
 
-            String boostrapServers = kafka1Container.getBootstrapServers() + "," + kafka2Container.getBootstrapServers() + "," + kafka3Container.getBootstrapServers();
+            String boostrapServers = kafka1Container.getBootstrapServers()
+                    + "," + kafka2Container.getBootstrapServers()
+                    + "," + kafka3Container.getBootstrapServers();
             log.info(boostrapServers);
             TestPropertyValues.of(
                     "spring.kafka.bootstrap-servers=" + boostrapServers
