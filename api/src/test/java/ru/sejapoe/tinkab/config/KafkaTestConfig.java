@@ -11,6 +11,9 @@ import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 public class KafkaTestConfig {
     private static final KafkaContainer kafka1Container;
     private static final KafkaContainer kafka2Container;
@@ -33,10 +36,27 @@ public class KafkaTestConfig {
     }
 
     private static KafkaContainer initKafkaBrokerContainer(int brokerId, Network network) {
+        final Map<String, String> env = new LinkedHashMap<>();
+        env.put("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "BROKER:PLAINTEXT,PLAINTEXT:SASL_PLAINTEXT");
+
+        env.put("KAFKA_LISTENER_NAME_PLAINTEXT_SASL_ENABLED_MECHANISMS", "PLAIN");
+
+        env.put("KAFKA_LISTENER_NAME_PLAINTEXT_PLAIN_SASL_JAAS_CONFIG", "org.apache.kafka.common.security.plain.PlainLoginModule required " +
+                "username=\"admin\" " +
+                "password=\"admin-secret\" " +
+                "user_admin=\"admin-secret\" " +
+                "user_producer=\"producer-secret\" " +
+                "user_consumer=\"consumer-secret\";");
+
+        env.put("KAFKA_SASL_JAAS_CONFIG", "org.apache.kafka.common.security.plain.PlainLoginModule required " +
+                "username=\"admin\" " +
+                "password=\"admin-secret\";");
+
         return new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:latest"))
                 .withNetwork(network)
                 .withNetworkAliases("kafka-" + brokerId)
                 .withEnv("KAFKA_BROKER_ID", Integer.toString(brokerId))
+                .withEnv(env)
                 .withExternalZookeeper("zookeeper:2181")
                 .dependsOn(zookeeperContainer)
                 .withStartupAttempts(3)

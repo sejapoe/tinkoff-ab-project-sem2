@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.sejapoe.tinkab.dto.SuccessResponse;
 import ru.sejapoe.tinkab.exception.BaseException;
 
@@ -47,6 +48,16 @@ public class RestExceptionHandler {
         return new SuccessResponse(
                 false,
                 ex.getStatusCode() + ": " + detailMessageArguments[0]
+        );
+
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public SuccessResponse methodArgumentTypeMismatchExceptionHandler(MethodArgumentTypeMismatchException ex) {
+        return new SuccessResponse(
+                false,
+                ex.getMostSpecificCause().getMessage()
         );
     }
 
