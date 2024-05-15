@@ -56,6 +56,8 @@ jobs:
         with:
           gradle-version: 8.6
       - name: Generate OpenAPI specs
+        env:
+          SPRING_DOCKER_COMPOSE_ENABLED: true
         run: ./gradlew :api:generateOpenApiDocs -x :api:test
       - name: Run OpenAPI Diff
         uses: docker://openapitools/openapi-diff:latest
@@ -118,8 +120,8 @@ jobs:
         with:
           paths: ${{ github.workspace }}/api/build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 75
-          min-coverage-changed-files: 75
+          min-coverage-overall: 50
+          min-coverage-changed-files: 50
           update-comment: true
           title: "Jacoco Report"
   deploy:

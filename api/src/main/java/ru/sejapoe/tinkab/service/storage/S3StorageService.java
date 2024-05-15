@@ -63,6 +63,7 @@ public class S3StorageService implements StorageService {
                             .bucket(bucketName)
                             .object(uuid.toString())
                             .stream(file.getInputStream(), file.getSize(), -1)
+                            .contentType(file.getContentType())
                             .build()
             );
 
@@ -98,6 +99,25 @@ public class S3StorageService implements StorageService {
             ).readAllBytes();
 
             return new ByteArrayResource(bytes);
+        } catch (ErrorResponseException e) {
+            if (e.errorResponse().code().equals("NoSuchKey")) {
+                throw new NotFoundException("Failed to read file: " + uuid);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    @SneakyThrows
+    @Override
+    public long getSize(UUID uuid) {
+        try {
+            return minioClient.statObject(
+                    StatObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(String.valueOf(uuid))
+                            .build()
+            ).size();
         } catch (ErrorResponseException e) {
             if (e.errorResponse().code().equals("NoSuchKey")) {
                 throw new NotFoundException("Failed to read file: " + uuid);

@@ -36,4 +36,6 @@ public interface StorageService {
      * @return the loaded file as a Resource object
      */
     Resource loadAsResource(String filename);
+
+    long getSize(UUID uuid);
 }

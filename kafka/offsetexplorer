@@ -1,0 +1,2 @@
+ #!/usr/bin/bash
+/home/sejapoe/build/offsetexplorer3/offsetexplorer -J-Djava.security.auth.login.config=/home/sejapoe/dev/java/tink-ab/kafka/kafka_client_jaas.conf
