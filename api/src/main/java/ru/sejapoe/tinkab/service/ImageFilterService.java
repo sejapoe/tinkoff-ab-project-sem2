@@ -17,6 +17,7 @@ import ru.sejapoe.tinkab.repo.image.filter.ImageFilterRepository;
 import ru.sejapoe.tinkab.service.storage.S3StorageService;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -51,10 +52,10 @@ public class ImageFilterService {
         // will throw error if image doesn't exist or not accessible by current user
         imageService.getById(imageId);
         Optional<ImageFilterEntity> imageFilterEntity = imageFilterRepository.get(requestId);
-        if (imageFilterEntity.isEmpty() || !imageFilterEntity.get().originalImageId().equals(imageId)) {
-            throw new NotFoundException("Request [%s] is not found".formatted(requestId));
+        if (imageFilterEntity.map(it -> Objects.equals(imageId, it.originalImageId())).orElse(false)) {
+            return imageFilterEntity.get();
         }
-        return imageFilterEntity.get();
+        throw new NotFoundException("Request [%s] is not found".formatted(requestId));
     }
 
     @Transactional
@@ -69,8 +70,6 @@ public class ImageFilterService {
         }
 
         long size = s3StorageService.getSize(editedImageId);
-
-
         var originalImage = imageRepository.get(request.originalImageId()).orElseThrow();
         String editedFilename = "%s (edited).%s".formatted(
                 FilenameUtils.getName(originalImage.filename()),
