@@ -1,0 +1,4 @@
+filter:
+  type: CROP
+  kafka:
+    group-id: workers.crop

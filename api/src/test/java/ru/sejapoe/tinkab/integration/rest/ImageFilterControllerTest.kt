@@ -52,6 +52,12 @@ class ImageFilterControllerTest : AbstractRestTest() {
             contentType = null
         }
     }
+    private val jsonAuthorizedHttpHeader by lazy {
+        HttpHeaders().apply {
+            addAll(authorizedHttpHeaders)
+            contentType = MediaType.APPLICATION_JSON
+        }
+    }
 
     private lateinit var storedUUID: UUID
     private lateinit var requestUUID: UUID
@@ -108,10 +114,19 @@ class ImageFilterControllerTest : AbstractRestTest() {
     @Test
     @Order(2)
     fun createRequest() {
-        val requestEntity = HttpEntity<Nothing>(authorizedHttpHeaders)
+        val requestEntity = HttpEntity(
+            """
+            {
+                "filters": [
+                    { "type": "CROP", "params": { "rect": [0, 240, 1024, 640] } }
+                ]
+            }
+        """.trimIndent(),
+            jsonAuthorizedHttpHeader
+        )
 
         val responseEntity = restTemplate.postForEntity<String>(
-            createURLWithPort("/image/$storedUUID/filters/apply?filters=CROP"),
+            createURLWithPort("/image/$storedUUID/filters/apply"),
             requestEntity,
         )
 
@@ -127,11 +142,19 @@ class ImageFilterControllerTest : AbstractRestTest() {
     @Test
     @Order(3)
     fun createRequestImageNotFound() {
-        val requestEntity = HttpEntity<Nothing>(authorizedHttpHeaders)
-
+        val requestEntity = HttpEntity(
+            """
+            {
+                "filters": [
+                    { "type": "CROP", "params": { "rect": [0, 240, 1024, 640] } }
+                ]
+            }
+        """.trimIndent(),
+            jsonAuthorizedHttpHeader
+        )
         val randomUUID = UUID.randomUUID()
         val responseEntity = restTemplate.postForEntity<String>(
-            createURLWithPort("/image/$randomUUID/filters/apply?filters=CROP"),
+            createURLWithPort("/image/$randomUUID/filters/apply"),
             requestEntity,
         )
 
@@ -149,22 +172,22 @@ class ImageFilterControllerTest : AbstractRestTest() {
     @Test
     @Order(4)
     fun createRequestBadFilter() {
-        val requestEntity = HttpEntity<Nothing>(authorizedHttpHeaders)
-
+        val requestEntity = HttpEntity(
+            """
+            {
+                "filters": [
+                    { "type": "PURR" }
+                ]
+            }
+        """.trimIndent(),
+            jsonAuthorizedHttpHeader
+        )
         val responseEntity = restTemplate.postForEntity<String>(
-            createURLWithPort("/image/$storedUUID/filters/apply?filters=BAD"),
+            createURLWithPort("/image/$storedUUID/filters/apply"),
             requestEntity,
         )
 
-        val expected = """
-            {
-                "success": false,
-                "message": "No enum constant ru.sejapoe.tinkab.domain.ImageFilter.BAD"
-            }
-        """.trimIndent()
-
-        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.statusCode)
-        JSONAssert.assertEquals(expected, responseEntity.body, JSONCompareMode.STRICT)
+        assertEquals(HttpStatus.FORBIDDEN, responseEntity.statusCode)
     }
 
     @Test

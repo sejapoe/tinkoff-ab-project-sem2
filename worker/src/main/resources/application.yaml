@@ -1,6 +1,11 @@
 spring:
   application:
     name: worker
+  datasource:
+    url: jdbc:postgresql://localhost:15433/workers_database
+    username: myuser
+    password: secret
+    driver-class-name: org.postgresql.Driver
   kafka:
     listener.ack-mode: manual
     bootstrap-servers:
@@ -11,3 +16,10 @@ spring:
       security.protocol: SASL_PLAINTEXT
       sasl.mechanism: PLAIN
       sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:admin}" password="${KAFKA_PASSWORD:admin-secret}";
+
+storage:
+  access-key: test-user
+  secret-key: secret-secret
+  endpoint: http://localhost:9001
+  bucket-name: test-bucket
+  region: us-east-1

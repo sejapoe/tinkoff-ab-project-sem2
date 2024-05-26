@@ -1,0 +1,4 @@
+filter:
+  type: SCHARR
+  kafka:
+    group-id: workers.scharr
