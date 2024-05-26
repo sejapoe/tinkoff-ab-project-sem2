@@ -1,8 +1,8 @@
 package ru.sejapoe.tinkab.domain;
 
 public enum ImageFilter {
-    REVERS_COLORS,
+    GRAYSCALE,
     CROP,
-    REMOVE_BACKGROUND,
-    OTHER
+    SCHARR,
+    LAPLACIAN
 }

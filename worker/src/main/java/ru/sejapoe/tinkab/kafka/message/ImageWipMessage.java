@@ -6,6 +6,9 @@ import java.util.UUID;
 public record ImageWipMessage(
         UUID imageId,
         UUID requestId,
-        List<String> filters
+        List<Filter> filters
 ) {
+    public record Filter(String type, Object params) {
+    }
 }
+

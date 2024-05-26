@@ -7,14 +7,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import ru.sejapoe.tinkab.domain.ImageFilter;
 import ru.sejapoe.tinkab.dto.ModifiedImageResponse;
 import ru.sejapoe.tinkab.dto.SuccessResponse;
+import ru.sejapoe.tinkab.dto.image.ApplyImageFilterRequest;
 import ru.sejapoe.tinkab.dto.image.ApplyImageFiltersResponse;
 import ru.sejapoe.tinkab.mapper.ImageFilterMapper;
 import ru.sejapoe.tinkab.service.ImageFilterService;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -40,10 +39,10 @@ public class ImageFilterController {
     @PostMapping(value = "/image/{image-id}/filters/apply", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ApplyImageFiltersResponse applyFilters(
             @PathVariable("image-id") UUID imageId,
-            @RequestParam List<ImageFilter> filters
+            @RequestBody ApplyImageFilterRequest filtersRequest
     ) {
         return new ApplyImageFiltersResponse(
-                imageFilterService.applyFilters(imageId, filters)
+                imageFilterService.applyFilters(imageId, filtersRequest.filters())
         );
     }
 

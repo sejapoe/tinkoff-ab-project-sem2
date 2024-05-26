@@ -105,8 +105,11 @@ services:
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
     depends_on:
       - zookeeper
+
 volumes:
   db_data:
+    driver: local
+  worker_db_data:
     driver: local
   minio_data:
     driver: local

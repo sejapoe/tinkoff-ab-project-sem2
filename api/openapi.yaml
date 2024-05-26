@@ -172,20 +172,12 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: filters
-          in: query
-          required: true
-          schema:
-            type: array
-            items:
-              type: string
-              enum:
-                # Приведенные ниже фильтры представлены в ознакомительных целях,
-                # тут вы можете вставить все, что душе угодно
-                - REVERS_COLORS
-                - CROP
-                - REMOVE_BACKGROUND
-                - OTHER
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplyImageFilterRequest'
+        required: true
       responses:
         '200':
           description: Успех выполнения операции
@@ -297,6 +289,29 @@ components:
           type: integer
           format: int32
           description: Размер файла в байтах
+    ApplyImageFilterRequest:
+      required:
+        - filters
+      type: object
+      properties:
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/Filter'
+    Filter:
+      required:
+        - type
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - GRAYSCALE
+            - CROP
+            - SCHARR
+            - LAPLACIAN
+        params:
+          type: object
     ApplyImageFiltersResponse:
       required:
         - requestId

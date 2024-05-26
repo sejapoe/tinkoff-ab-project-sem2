@@ -1,0 +1,4 @@
+filter:
+  type: GRAYSCALE
+  kafka:
+    group-id: workers.grayscale

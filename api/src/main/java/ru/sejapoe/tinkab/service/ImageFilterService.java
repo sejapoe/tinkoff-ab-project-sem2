@@ -6,9 +6,9 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.sejapoe.tinkab.domain.ImageEntity;
-import ru.sejapoe.tinkab.domain.ImageFilter;
 import ru.sejapoe.tinkab.domain.ImageFilterEntity;
 import ru.sejapoe.tinkab.domain.ImageRequestStatus;
+import ru.sejapoe.tinkab.dto.image.ApplyImageFilterRequest;
 import ru.sejapoe.tinkab.exception.InternalServerError;
 import ru.sejapoe.tinkab.exception.NotFoundException;
 import ru.sejapoe.tinkab.kafka.message.ImageWipMessage;
@@ -17,7 +17,6 @@ import ru.sejapoe.tinkab.repo.image.filter.ImageFilterRepository;
 import ru.sejapoe.tinkab.service.storage.S3StorageService;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,13 +30,20 @@ public class ImageFilterService {
     private final S3StorageService s3StorageService;
 
     @Transactional
-    public UUID applyFilters(UUID imageId, List<ImageFilter> filters) {
+    public UUID applyFilters(UUID imageId, List<ApplyImageFilterRequest.Filter> filters) {
+        // todo: validate filter to params
+
         // will throw error if image doesn't exist or not accessible by current user
         ImageEntity imageEntity = imageService.getById(imageId);
 
         ImageFilterEntity filterEntity = imageFilterRepository.create(imageEntity.id());
 
-        var message = new ImageWipMessage(imageId, filterEntity.id(), filters.stream().map(Enum::name).toList());
+        var message = new ImageWipMessage(imageId,
+                filterEntity.id(),
+                filters.stream()
+                        .map(filter -> new ImageWipMessage.Filter(filter.type().name(), filter.params()))
+                        .toList());
+
         try {
             kafkaTemplate.send("images.wip", message).join();
         } catch (Exception e) {
@@ -52,10 +58,10 @@ public class ImageFilterService {
         // will throw error if image doesn't exist or not accessible by current user
         imageService.getById(imageId);
         Optional<ImageFilterEntity> imageFilterEntity = imageFilterRepository.get(requestId);
-        if (imageFilterEntity.map(it -> Objects.equals(imageId, it.originalImageId())).orElse(false)) {
-            return imageFilterEntity.get();
+        if (imageFilterEntity.isEmpty() || !imageFilterEntity.get().originalImageId().equals(imageId)) {
+            throw new NotFoundException("Request [%s] is not found".formatted(requestId));
         }
-        throw new NotFoundException("Request [%s] is not found".formatted(requestId));
+        return imageFilterEntity.get();
     }
 
     @Transactional
@@ -63,24 +69,24 @@ public class ImageFilterService {
         var request = imageFilterRepository.get(requestId).orElseThrow(() ->
                 new NotFoundException("Request [%s] is not found".formatted(requestId))
         );
-        request = imageFilterRepository.update(requestId, ImageRequestStatus.DONE, editedImageId);
 
-        if (request.editedImageId().equals(request.originalImageId())) {
-            return;
+        if (!editedImageId.equals(request.originalImageId())) {
+            var originalImage = imageRepository.get(request.originalImageId()).orElseThrow();
+            String editedFilename = "%s (edited).%s".formatted(
+                    FilenameUtils.getName(originalImage.filename()),
+                    FilenameUtils.getExtension(originalImage.filename())
+            );
+            long size = s3StorageService.getSize(editedImageId);
+            var editedImage = new ImageEntity(
+                    editedImageId,
+                    editedFilename,
+                    size,
+                    originalImage.userId()
+            );
+            imageRepository.save(editedImage);
+            editedImageId = editedImage.id();
         }
 
-        long size = s3StorageService.getSize(editedImageId);
-        var originalImage = imageRepository.get(request.originalImageId()).orElseThrow();
-        String editedFilename = "%s (edited).%s".formatted(
-                FilenameUtils.getName(originalImage.filename()),
-                FilenameUtils.getExtension(originalImage.filename())
-        );
-        var editedImage = new ImageEntity(
-                editedImageId,
-                editedFilename,
-                size,
-                originalImage.userId()
-        );
-        imageRepository.save(editedImage);
+        imageFilterRepository.update(requestId, ImageRequestStatus.DONE, editedImageId);
     }
 }

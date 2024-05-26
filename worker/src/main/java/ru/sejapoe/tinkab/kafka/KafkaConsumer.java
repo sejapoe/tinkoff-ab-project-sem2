@@ -10,9 +10,11 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.stereotype.Component;
+import ru.sejapoe.tinkab.exception.AlreadyHandledException;
+import ru.sejapoe.tinkab.exception.UnsupportedFilterException;
 import ru.sejapoe.tinkab.kafka.message.ImageDoneMessage;
 import ru.sejapoe.tinkab.kafka.message.ImageWipMessage;
-import ru.sejapoe.tinkab.worker.Worker;
+import ru.sejapoe.tinkab.worker.WorkerFactory;
 
 import java.util.UUID;
 
@@ -20,12 +22,12 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class KafkaConsumer {
-    private final Worker worker;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final WorkerFactory workerFactory;
 
     @KafkaListener(
             topics = "images.wip",
-            groupId = "worker",
+            groupId = "${filter.kafka.group-id}",
             properties = {
                     ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG + "=false",
                     ConsumerConfig.ISOLATION_LEVEL_CONFIG + "=read_committed",
@@ -33,7 +35,7 @@ public class KafkaConsumer {
                     ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG + "=org.apache.kafka.common.serialization.StringDeserializer",
                     ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG + "=org.springframework.kafka.support.serializer.JsonDeserializer",
                     JsonDeserializer.TRUSTED_PACKAGES + "=ru.sejapoe.tinkab.kafka.message",
-                    ConsumerConfig.AUTO_OFFSET_RESET_CONFIG + "=earliest"
+                    ConsumerConfig.AUTO_OFFSET_RESET_CONFIG + "=earliest",
             }
     )
     public void consume(ConsumerRecord<String, ImageWipMessage> record, Acknowledgment acknowledgment) {
@@ -43,37 +45,53 @@ public class KafkaConsumer {
                 value: {}
                 """, record.topic(), record.key(), record.value());
         ImageWipMessage imageWipMessage = record.value();
+
+        ProducerRecord<String, Object> producerRecord = produce(imageWipMessage);
+
+        if (producerRecord != null) {
+            kafkaTemplate.send(producerRecord).join();
+        }
+
+        acknowledgment.acknowledge();
+    }
+
+    private ProducerRecord<String, Object> produce(ImageWipMessage imageWipMessage) {
         if (imageWipMessage.filters().isEmpty()) {
             log.error("Empty WIP filters");
-            imageWipMessage.filters().add("PASS");
+            return new ProducerRecord<>(
+                    "images.done",
+                    new ImageDoneMessage(imageWipMessage.imageId(), imageWipMessage.requestId())
+            );
         }
-        String filter = imageWipMessage.filters().remove(0);
-        UUID newImageId = worker.doWork(imageWipMessage.imageId(), filter);
 
-        ProducerRecord<String, Object> producerRecord;
+        ImageWipMessage.Filter filter = imageWipMessage.filters().remove(0);
 
-        if (imageWipMessage.filters().isEmpty()) { // is done
-            producerRecord = new ProducerRecord<>(
+        boolean isTemp = !imageWipMessage.filters().isEmpty();
+
+        UUID newImageId;
+        try {
+            newImageId = workerFactory.doWork(imageWipMessage.imageId(), imageWipMessage.requestId(), filter.type(), filter.params(), isTemp);
+        } catch (UnsupportedFilterException e) {
+            log.info("Unsupported filter");
+            return null;
+        } catch (AlreadyHandledException e) {
+            log.info("Already handled");
+            return null;
+        } catch (Exception e) {
+            log.error("unexpected error during applying filter to image", e);
+            return null;
+        }
+
+        if (isTemp) {
+            return new ProducerRecord<>(
+                    "images.wip",
+                    new ImageWipMessage(newImageId, imageWipMessage.requestId(), imageWipMessage.filters())
+            );
+        } else { // is done
+            return new ProducerRecord<>(
                     "images.done",
                     new ImageDoneMessage(newImageId, imageWipMessage.requestId())
             );
-        } else {
-            producerRecord = new ProducerRecord<>(
-                    "images.wip",
-                    imageWipMessage
-            );
         }
-
-        kafkaTemplate.send(producerRecord).join();
-        acknowledgment.acknowledge();
-
-//        kafkaTemplate.send(producerRecord).handle((stringObjectSendResult, throwable) -> {
-//            if (throwable == null) {
-//                acknowledgment.acknowledge();
-//            } else {
-//                log.error("Failed to send message to kafka", throwable);
-//            }
-//            return 0;
-//        });
     }
 }
