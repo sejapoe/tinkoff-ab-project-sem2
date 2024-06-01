@@ -4,5 +4,6 @@ public enum ImageFilter {
     GRAYSCALE,
     CROP,
     SCHARR,
-    LAPLACIAN
+    LAPLACIAN,
+    TAG
 }

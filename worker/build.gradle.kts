@@ -33,6 +33,10 @@ dependencies {
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
     implementation("com.fasterxml.jackson.core:jackson-databind:2.17.0")
 
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-webflux
+    runtimeOnly("org.postgresql:postgresql")
+    implementation("io.github.resilience4j:resilience4j-spring-boot3:2.1.0")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.kafka:spring-kafka")
