@@ -17,9 +17,13 @@ spring:
       sasl.mechanism: PLAIN
       sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER:admin}" password="${KAFKA_PASSWORD:admin-secret}";
 
+
 storage:
   access-key: test-user
   secret-key: secret-secret
   endpoint: http://localhost:9001
   bucket-name: test-bucket
   region: us-east-1
+
+server:
+  port: 8081

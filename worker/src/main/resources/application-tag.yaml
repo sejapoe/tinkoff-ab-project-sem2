@@ -1,0 +1,30 @@
+filter:
+  type: TAG
+  kafka:
+    group-id: workers.tag
+
+
+resilience4j:
+  ratelimiter:
+    instances:
+      imaggaRateLimiter:
+        limitForPeriod: 10
+        limitRefreshPeriod: 60s
+        timeoutDuration: 10s
+  retry:
+    instances:
+      imaggaRetry:
+        max-attempts: 3
+        wait-duration: 5s
+        retry-exceptions:
+          - org.springframework.web.reactive.function.client.WebClientResponseException.TooManyRequests
+          - org.springframework.web.reactive.function.client.WebClientResponseException.InternalServerError
+          - org.springframework.web.reactive.function.client.WebClientResponseException.BadGateway
+          - org.springframework.web.reactive.function.client.WebClientResponseException.ServiceUnavailable
+          - org.springframework.web.reactive.function.client.WebClientResponseException.GatewayTimeout
+  circuitbreaker:
+    instances:
+      imaggaCircuitBreaker:
+        sliding-window-size: 10
+        wait-duration-in-open-state: 30s
+        sliding-window-type: COUNT_BASED
