@@ -1,4 +1,27 @@
 services:
+  #  api:
+  #    build: .
+  #    hostname: api
+  #    container_name: api
+  #    depends_on:
+  #      - postgres
+  #      - zookeeper
+  #      - flyway
+  #      - kafka-1
+  #      - kafka-2
+  #      - kafka-3
+  #    environment:
+  #      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mydatabase
+  #      SPRING_KAFKA_BOOTSTRAP-SERVERS: kafka-1:19092, kafka-2:19093, kafka-3:19094
+  #      STORAGE_ENDPOINT: http://storage:9000
+  #    networks:
+  #      - kafka
+  #      - db
+  #      - storage
+  #
+  #    ports:
+  #      - 8080:8080
+
   postgres:
     image: 'postgres:latest'
     environment:
@@ -15,6 +38,8 @@ services:
       start_period: 80s
     ports:
       - '15432:5432'
+    networks:
+      - db
   flyway:
     image: flyway/flyway
     command: -url=jdbc:postgresql://postgres:5432/mydatabase -user=myuser -password=secret -connectRetries=60 migrate
@@ -38,6 +63,8 @@ services:
       timeout: 5s
     ports:
       - '9001:9000'
+    networks:
+      - storage
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     volumes:
@@ -48,6 +75,8 @@ services:
       KAFKA_OPTS: "-Djava.security.auth.login.config=/etc/kafka/zookeeper_jaas.conf"
     ports:
       - "2181:2181"
+    networks:
+      - kafka
 
   kafka-1:
     image: confluentinc/cp-kafka:latest
@@ -67,6 +96,8 @@ services:
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
     depends_on:
       - zookeeper
+    networks:
+      - kafka
 
   kafka-2:
     image: confluentinc/cp-kafka:latest
@@ -86,6 +117,8 @@ services:
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
     depends_on:
       - zookeeper
+    networks:
+      - kafka
 
   kafka-3:
     image: confluentinc/cp-kafka:latest
@@ -105,6 +138,29 @@ services:
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
     depends_on:
       - zookeeper
+    networks:
+      - kafka
+
+  grafana:
+    build: './config/grafana'
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - monitoring
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    networks:
+      - monitoring
 
 volumes:
   db_data:
@@ -113,3 +169,10 @@ volumes:
     driver: local
   minio_data:
     driver: local
+
+networks:
+  db: { }
+  storage: { }
+  kafka: { }
+  monitoring:
+    driver: bridge

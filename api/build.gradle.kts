@@ -41,6 +41,9 @@ dependencies {
     // https://mvnrepository.com/artifact/io.minio/minio
     implementation("io.minio:minio:8.5.9")
 
+    // https://mvnrepository.com/artifact/io.micrometer/micrometer-registry-prometheus
+    implementation("io.micrometer:micrometer-registry-prometheus")
+
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
@@ -92,7 +95,7 @@ tasks.withType<Checkstyle>() {
     configFile = File("$projectDir/config/checkstyle/checkstyle.xml")
 }
 
-tasks.jar {
+tasks.bootJar {
     archiveFileName = "app.jar"
 }
 

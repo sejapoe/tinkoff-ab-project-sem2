@@ -33,3 +33,60 @@ storage:
 jwt:
   secret: 47397FFF432646294A404E635266556A586E3272357538782F4125442A472D4B
   issuer: sejapoe
+
+  #management:
+  ##  server:
+  ##    port: 8091
+  #  endpoints:
+  #    web:
+  #      exposure:
+  #        include: info,health,prometheus
+  ## info,health,prometheus
+  ##      base-path:  /
+  ##      path-mapping:
+  ##        prometheus: metrics
+  metrics:
+    #    tags:
+    #      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true
+##    export:
+##      prometheus:
+##        enabled: true
+##  prometheus:
+##    metrics:
+##      export:
+##        enabled: true
+
+management:
+  endpoint:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+      show-components: always
+      probes:
+        enabled: true
+    shutdown:
+      enabled: true
+    info:
+      env:
+        enabled: true
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, metrics, info, health, shutdown, beans
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
